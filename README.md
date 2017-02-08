@@ -86,7 +86,7 @@ A Spark-based implementation of Conditional Random Fields (CRFs) for segmenting/
  Also you can mail to:
  * hqzizania(Intel)
  * [mpjlu](https://github.com/mpjlu)
- * [VinceShie](https://github.com/VinceShieh)
+ * [VinceShieh](https://github.com/VinceShieh)
  * [chenghao-intel](https://github.com/chenghao-intel)
  * [ynXiang](https://github.com/ynXiang)
 
