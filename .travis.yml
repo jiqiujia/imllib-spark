@@ -21,7 +21,7 @@ cache:
   directories:
   - $HOME/.m2
 script:
-  - mvn clean package -q -Dmaven.javadoc.skip=true -Dspark=2.0 -Dscala=2.11
+  - sbt clean package
   - sudo -E ./travis/configssh.sh
   - sudo -E ./travis/restart-hadoop-spark.sh
   - /opt/hadoop-2.6.5/bin/yarn node -list 2

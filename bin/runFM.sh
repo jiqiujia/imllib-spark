@@ -1,3 +1,4 @@
+export HADOOP_CONF_DIR=/opt/hadoop-2.6.5/etc/hadoop/conf/
 /opt/spark-1.6.0-bin-hadoop2.6/bin/spark-submit \
     --class FMExample \
     --master yarn-cluster \
