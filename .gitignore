@@ -1,5 +1,4 @@
 target/
 project/target/
-run*
 *.swp
 *.tmp
