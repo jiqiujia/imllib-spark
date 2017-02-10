@@ -15,7 +15,7 @@
 
 # stop process
 /opt/hadoop-2.6.5/sbin/stop-dfs.sh
-/opt/hadoop-2.6.5/sbin/stop-yarn.sh
+#/opt/hadoop-2.6.5/sbin/stop-yarn.sh
 /opt/hadoop-2.6.5/sbin/stop-all.sh
 
 # clear data directories
@@ -34,7 +34,7 @@ rm -fr /opt/hadoop-2.6.5/logs/*
 /opt/hadoop-2.6.5/sbin/start-dfs.sh
 
 # restart yarn
-/opt/hadoop-2.6.5/sbin/start-yarn.sh
+#/opt/hadoop-2.6.5/sbin/start-yarn.sh
 
 # restart spark
 /opt/spark-1.6.0-bin-hadoop2.6/sbin/start-all.sh
