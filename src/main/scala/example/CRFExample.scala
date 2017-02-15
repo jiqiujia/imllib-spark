@@ -22,18 +22,18 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import com.intel.imllib.crf.nlp._
 
-object CRFFromParsedFileExample {
+object CRFExample {
 
   def main(args: Array[String]) {
     if (args.length != 3) {
-      println("CRFFromParsedFileExample <templateFile> <trainFile> <testFile>")
+      println("CRFExample <templateFile> <trainFile> <testFile>")
     }
 
     val templateFile = args(0)
     val trainFile = args(1)
     val testFile = args(2)
 
-    val conf = new SparkConf().setAppName(s"${this.getClass.getSimpleName}")
+    val conf = new SparkConf().setAppName("CRFExample")
     val sc = new SparkContext(conf)
 
     val templates: Array[String] = scala.io.Source.fromFile(templateFile).getLines().filter(_.nonEmpty).toArray
