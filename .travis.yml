@@ -23,7 +23,7 @@ script:
   - sbt clean package
   - sudo -E ./travis/configssh.sh
   - sudo -E ./travis/restart-hadoop-spark.sh
-  - cat /opt/hadoop-2.6.5/logs/*
+#  - cat /opt/hadoop-2.6.5/logs/*
   - jps
-#  - hdfs dfs -put ./data/* /
+  - hdfs dfs -put ./data/* /
   - sudo -E ./bin/runFM.sh
