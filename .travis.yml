@@ -7,7 +7,6 @@ install:
   - cd /opt/
   - wget http://d3kbcqa49mib13.cloudfront.net/spark-2.0.2-bin-hadoop2.7.tgz
   - tar -xzf spark-2.0.2-bin-hadoop2.7.tgz
-#  - wget http://mirror.nexcess.net/apache/hadoop/common/hadoop-2.6.5/hadoop-2.6.5.tar.gz
   - wget http://d3kbcqa49mib13.cloudfront.net/hadoop-2.7.3.tar.gz
   - tar -xzf hadoop-2.7.3.tar.gz
   - wget http://d3kbcqa49mib13.cloudfront.net/scala-2.11.8.tgz
@@ -21,14 +20,7 @@ install:
   - cp ./travis/core-site.xml /opt/hadoop-2.7.3/etc/hadoop/
   - cp ./travis/hdfs-site.xml /opt/hadoop-2.7.3/etc/hadoop/
   - cp ./travis/mapred-site.xml /opt/hadoop-2.7.3/etc/hadoop/
-before_script:
-  - "export JAVA_OPTS=-Xmx512m"
-cache:
-  directories:
-  - $HOME/.m2
 script:
-  - cat /proc/cpuinfo| grep "processor"| wc -l
-  - free
   - sbt clean package
   - sudo -E ./travis/configssh.sh
   - sudo -E ./travis/restart-hadoop-spark.sh
