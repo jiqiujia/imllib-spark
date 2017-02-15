@@ -32,7 +32,7 @@ script:
   - sbt clean package
   - sudo -E ./travis/configssh.sh
   - sudo -E ./travis/restart-hadoop-spark.sh
-  - hdfs dfs -mkdir /data
-  - hdfs dfs -mkdir /data/fm
-  - hdfs dfs -put ./data/fm/* /data/fm
+  - hdfs dfs -put ./data /
   - sudo -E ./bin/runFM.sh
+  - sudo -E ./bin/runFFM.sh
+  - sudo -E ./bin/runCRF.sh
