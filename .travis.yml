@@ -27,10 +27,11 @@ cache:
   directories:
   - $HOME/.m2
 script:
+  - cat /proc/cpuinfo| grep "processor"| wc -l
+  - free
   - sbt clean package
   - sudo -E ./travis/configssh.sh
   - sudo -E ./travis/restart-hadoop-spark.sh
-  - jps
   - hdfs dfs -mkdir /data
   - hdfs dfs -mkdir /data/fm
   - hdfs dfs -put ./data/fm/* /data/fm
