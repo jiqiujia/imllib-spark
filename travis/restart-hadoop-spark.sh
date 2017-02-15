@@ -21,8 +21,10 @@
 # clear data directories
 mkdir -p /usr/local/hdfs/namenode/
 mkdir -p /usr/local/hdfs/datanode/
+mkdir -p /usr/local/hdfs/tmp/
 rm -fr /usr/local/hdfs/namenode/*
 rm -fr /usr/local/hdfs/datanode/*
+rm -fr /usr/local/hdfs/tmp/*
 
 # remove related logs
 rm -fr /opt/hadoop-2.7.3/logs/*
