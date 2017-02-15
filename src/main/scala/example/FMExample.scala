@@ -35,9 +35,7 @@ object FMExample extends App {
 
     //customer dataset format convertor
     
-    val trainFile = "data/fm/a9a"
-
-    val rawData = scala.io.Source.fromFile(trainFile).map(_.split("\\s")).map(x => {
+    val rawData = sc.textFile(args(0)).map(_.split("\\s")).map(x => {
       if (x(0).toInt > 0)
         x(0) = "1"
       else

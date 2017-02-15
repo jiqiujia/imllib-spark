@@ -31,7 +31,7 @@ script:
   - sudo -E ./travis/configssh.sh
   - sudo -E ./travis/restart-hadoop-spark.sh
   - jps
-  - hadoop fs -ls /
-  - hadoop dfs -ls /
-  - hdfs dfs -ls /
+  - hdfs dfs -mkdir /data
+  - hdfs dfs -mkdir /data/fm
+  - hdfs dfs -put ./data/fm/* /data/fm
   - sudo -E ./bin/runFM.sh
