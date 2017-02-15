@@ -27,11 +27,11 @@ cache:
   directories:
   - $HOME/.m2
 script:
+  - sbt clean package
+  - sudo -E ./travis/configssh.sh
+  - sudo -E ./travis/restart-hadoop-spark.sh
   - jps
   - hadoop fs -ls /
   - hadoop dfs -ls /
   - hdfs dfs -ls /
-  - sbt clean package
-  - sudo -E ./travis/configssh.sh
-  - sudo -E ./travis/restart-hadoop-spark.sh
   - sudo -E ./bin/runFM.sh
