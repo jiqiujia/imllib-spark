@@ -1,4 +1,4 @@
-/opt/spark-1.6.0-bin-hadoop2.6/bin/spark-submit \
+$SPARK_HOME/bin/spark-submit \
     --class FMExample \
     --master local \
     target/scala-2.11/imllib_2.11-0.0.1.jar \

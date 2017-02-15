@@ -12,6 +12,9 @@ install:
   - tar -xzf hadoop-2.7.3.tar.gz
   - wget http://d3kbcqa49mib13.cloudfront.net/scala-2.11.8.tgz
   - tar -zxf scala-2.11.8.tgz
+  - export SPARK_HOME=/opt/spark-2.0.2-bin-hadoop2.7
+  - export HADOOP_HOME=/opt/hadoop-2.7.3
+  - export SCALA_HOME=/opt/scala-2.11.8
   - cd ${imllib}
   - cp ./travis/spark-env.sh /opt/spark-2.0.2-bin-hadoop2.7/conf/
   - cp ./travis/core-site.xml /opt/hadoop-2.7.3/etc/hadoop/
