@@ -136,7 +136,7 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
    */
   @DeveloperApi
   def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
-    var (weights, _) = GradientDescentFM.parallelSGD(
+    val (weights, _) = GradientDescentFM.parallelSGD(
       data,
       gradient,
       updater,

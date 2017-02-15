@@ -26,7 +26,7 @@
 # - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node
 # - SPARK_PUBLIC_DNS, to set the public dns name of the driver program
 # - SPARK_CLASSPATH, default classpath entries to append
-export HADOOP_CONF_DIR=/opt/hadoop-2.6.5
+export HADOOP_CONF_DIR=/opt/hadoop-2.7.3/etc/hadoop
 export SPARK_LOCAL_IP=localhost
 
 # Options read by executors and drivers running inside the cluster
@@ -69,3 +69,5 @@ export SPARK_LOCAL_IP=localhost
 # - SPARK_PID_DIR       Where the pid file is stored. (Default: /tmp)
 # - SPARK_IDENT_STRING  A string representing this instance of spark. (Default: $USER)
 # - SPARK_NICENESS      The scheduling priority for daemons. (Default: 0)
+
+export SCALA_HOME=/opt/scala-2.11.8
