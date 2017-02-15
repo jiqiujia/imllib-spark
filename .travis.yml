@@ -27,6 +27,8 @@ cache:
   - $HOME/.m2
 script:
   - jps
+  - hadoop fs -ls /
+  - hadoop dfs -ls /
   - hdfs dfs -ls /
   - sbt clean package
   - sudo -E ./travis/configssh.sh
