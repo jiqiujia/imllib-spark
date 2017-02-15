@@ -26,6 +26,8 @@
 # - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node
 # - SPARK_PUBLIC_DNS, to set the public dns name of the driver program
 # - SPARK_CLASSPATH, default classpath entries to append
+export HADOOP_CONF_DIR=/opt/hadoop-2.6.5
+export SPARK_LOCAL_IP=localhost
 
 # Options read by executors and drivers running inside the cluster
 # - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node
@@ -46,7 +48,6 @@
 # - SPARK_YARN_DIST_ARCHIVES, Comma separated list of archives to be distributed with the job.
 
 # Options for the daemons used in the standalone deploy mode
-export  SPARK_MASTER_IP= localhost 
 #i, to bind the master to a different IP address or hostname
 # - SPARK_MASTER_PORT / SPARK_MASTER_WEBUI_PORT, to use non-default ports for the master
 # - SPARK_MASTER_OPTS, to set config properties only for the master (e.g. "-Dx=y")
