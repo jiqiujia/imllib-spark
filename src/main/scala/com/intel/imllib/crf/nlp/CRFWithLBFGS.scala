@@ -175,7 +175,7 @@ private class CostFun(
       },
       combOp = (c1, c2) => {
         (c1._1 + c2._1, c1._2 + c2._2)
-      }, treeDepth)
+      })
 
     bcWeights.destroy()
 
