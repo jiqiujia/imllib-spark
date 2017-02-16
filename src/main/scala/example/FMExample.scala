@@ -29,8 +29,8 @@ object FMExample extends App {
 
     val sc = new SparkContext(new SparkConf().setAppName("FMExample"))
 
-    if (args.length != 3) {
-      println("FMExample <train_file> <test_file> <partitions>")
+    if (args.length != 5) {
+      println("FMExample <train_file> <partitions> <n_iters> <stepSize> <k>")
     }
 
     //customer dataset format convertor
@@ -44,17 +44,17 @@ object FMExample extends App {
         .map(x => (x(0).toInt - 1, x(1).toDouble))
         .sortBy(_._1)
       (x(0).toInt, v)
-    }).repartition(args(2).toInt)
+    }).repartition(args(1).toInt)
 
     val length = rawData.map(_._2.last._1).max + 1
-println("data size:" + rawData.count +",feature size:" + length + ",k:" + args(5).toInt + ",stepSize:" + args(4))
+println("data size:" + rawData.count +",feature size:" + length + ",k:" + args(4).toInt + ",stepSize:" + args(3))
     val data: RDD[LabeledPoint] = rawData.map{case(label, v) => LabeledPoint(label, Vectors.sparse(length, v.map(_._1), v.map(_._2)))}
     
     val splits = data.randomSplit(Array(0.8, 0.2))
     val (training, testing) = (splits(0), splits(1))
    
     val fm1: FMModel = FMWithSGD.train(training, task = 1, numIterations
-      = args(3).toInt, stepSize = args(4).toDouble, dim = (false, true, args(5).toInt), regParam = (0, 0.0, 0.01), initStd = 0.01)
+      = args(2).toInt, stepSize = args(3).toDouble, dim = (false, true, args(4).toInt), regParam = (0, 0.0, 0.01), initStd = 0.01)
 
     val scores: RDD[(Int, Int)] = fm1.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))
     val accuracy = scores.filter(x => x._1 == x._2).count().toDouble / scores.count()
