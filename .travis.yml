@@ -27,4 +27,4 @@ script:
   - hdfs dfs -put ./data /
   - sudo -E ./bin/runFM.sh
   - sudo -E ./bin/runFFM.sh
-#  - sudo -E ./bin/runCRF.sh
+  - sudo -E ./bin/runCRF.sh
