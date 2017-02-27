@@ -1,4 +1,7 @@
 # IMLLIB
+
+[![Build Status](https://travis-ci.org/Intel-bigdata/imllib-spark.svg?branch=master)](https://travis-ci.org/Intel-bigdata/imllib-spark)
+
 A package contains three Spark-based implementations. It includes
  * Factorization Machines (LibFM)
  * Field-Awared Factorization Machine (FFM)
