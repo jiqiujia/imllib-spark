@@ -15,34 +15,24 @@
  * limitations under the License.
  */
 
+package com.intel.imllib.fm
+
 import org.specs2._
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.mllib.regression._
 import org.apache.spark.mllib.util.MLUtils
-import org.apache.spark.rdd.RDD
-
-import com.intel.imllib.fm.regression._
-
-
-import scala.collection.mutable
-
-import org.apache.spark.mllib.linalg.{Vectors, Vector}
-import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.random._
-import org.apache.spark.mllib.recommendation.Rating
-import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.configuration.{Algo, FeatureType}
 import org.apache.spark.mllib.tree.model.{Split, DecisionTreeModel, Node, Predict}
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 
+import com.intel.imllib.fm.regression._
+
 import scala.collection.JavaConverters._
 import scala.util.Random
 import scala.util.control.Breaks._
-
-import org.scalatest.Matchers
-
 
 object FMSuite extends Specification {
   def is = s2"""
@@ -63,7 +53,7 @@ object FMSuite extends Specification {
     val step_size = 0.01
     val k = 4
 
-    val target_accuracy = 0.8
+    val target_accuracy = 0.9
 
     val data = generateDecisionTreeLabeledPoints(sc, math.ceil(numExamples * 1.25).toLong,
         numFeatures, numPartitions, labelType,
