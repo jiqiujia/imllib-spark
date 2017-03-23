@@ -28,7 +28,6 @@ import org.apache.spark.mllib.linalg._
 import org.apache.spark.mllib.optimization.{Updater, Gradient}
 import org.apache.spark.mllib.regression
 import org.apache.spark.rdd.RDD
-//import org.apache.spark.mllib.util.Loader._
 import org.apache.spark.mllib.util.{Loader, Saveable}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import breeze.linalg.{DenseVector => BDV}
