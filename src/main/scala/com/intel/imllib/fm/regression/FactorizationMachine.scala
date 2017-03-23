@@ -181,7 +181,7 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
       case (i, v) =>
         val pos = i * k2
         for (f <- 0 until k2) {
-          weightsArray(pos + i) -= thisIterStepSize * ((sum(f) * v - weights(pos + f) * v * v) * mult + r2 * weightsArray(pos + i))
+          weightsArray(pos) -= thisIterStepSize * ((sum(f) * v - weights(pos + f) * v * v) * mult + r2 * weightsArray(pos))
         }
     }
 
