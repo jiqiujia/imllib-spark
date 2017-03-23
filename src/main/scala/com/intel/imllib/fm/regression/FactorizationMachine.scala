@@ -28,7 +28,6 @@ import org.apache.spark.mllib.linalg._
 import org.apache.spark.mllib.optimization.{Updater, Gradient}
 import org.apache.spark.mllib.regression
 import org.apache.spark.rdd.RDD
-//import org.apache.spark.mllib.util.Loader._
 import org.apache.spark.mllib.util.{Loader, Saveable}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import breeze.linalg.{DenseVector => BDV}
@@ -181,7 +180,7 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
       case (i, v) =>
         val pos = i * k2
         for (f <- 0 until k2) {
-          weightsArray(pos) -= thisIterStepSize * ((sum(f) * v - weights(pos + f) * v * v) * mult + r2 * weightsArray(pos))
+          weightsArray(pos + f) -= thisIterStepSize * ((sum(f) * v - weights(pos + f) * v * v) * mult + r2 * weightsArray(pos + f))
         }
     }
 
