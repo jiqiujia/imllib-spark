@@ -264,7 +264,7 @@ private[nlp] class Tagger (
     if(nBest > 0) {
       //initialize nBest
       if(agenda.nonEmpty) agenda.clear()
-      val nodesTemp = nodes.slice((x.size - 1) * ySize, x.size * ySize - 1)
+      val nodesTemp = nodes.slice((x.size - 1) * ySize, x.size * ySize)
       var i = 0
       while (i < nodesTemp.length) {
         val n = nodesTemp(i)
