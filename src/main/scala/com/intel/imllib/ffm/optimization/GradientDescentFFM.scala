@@ -17,12 +17,11 @@
 
 package com.intel.imllib.ffm.optimization
 
-import breeze.linalg.{DenseVector => BDV}
+import breeze.linalg.{SparseVector=>BSV, Vector=>BV, DenseVector => BDV}
 import org.apache.spark.annotation.Experimental
 import org.apache.spark.mllib.optimization._
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
 import org.apache.spark.rdd.RDD
-
 import com.intel.imllib.ffm.classification._
 
 import scala.collection.mutable.ArrayBuffer
@@ -136,6 +135,25 @@ class GradientDescentFFM (private var gradient: Gradient, private var updater: U
 }
 
 object GradientDescentFFM {
+  def toBreeze(mllibVec: Vector): BV[Double] = new BDV[Double](mllibVec.toDense.values)
+  def fromBreeze(breezeVector: BV[Double]): Vector = {
+    breezeVector match {
+      case v: BDV[Double] =>
+        if (v.offset == 0 && v.stride == 1 && v.length == v.data.length) {
+          new DenseVector(v.data)
+        } else {
+          new DenseVector(v.toArray) // Can't use underlying array directly, so make a new one
+        }
+      case v: BSV[Double] =>
+        if (v.index.length == v.used) {
+          new SparseVector(v.length, v.index, v.data)
+        } else {
+          new SparseVector(v.length, v.index.slice(0, v.used), v.data.slice(0, v.used))
+        }
+      case v: BV[_] =>
+        sys.error("Unsupported Breeze vector type: " + v.getClass.getName)
+    }
+  }
   def parallelAdag(
                     data: RDD[(Double, Array[(Int, Int, Double)])],
                     gradient: Gradient,
@@ -160,7 +178,7 @@ object GradientDescentFFM {
 
       val (wSum, lSum) = data.treeAggregate(BDV(bcWeights.value.toArray), 0.0)(
         seqOp = (c, v) => {
-          gradient.asInstanceOf[FFMGradient].computeFFM(v._1, (v._2), Vectors.dense(c._1.toArray),
+          gradient.asInstanceOf[FFMGradient].computeFFM(v._1, (v._2), fromBreeze(c._1),
             1.0, eta, lambda, true, i, solver)
         },
         combOp = (c1, c2) => {
