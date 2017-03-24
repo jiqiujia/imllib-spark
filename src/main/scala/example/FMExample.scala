@@ -18,7 +18,6 @@
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.mllib.regression._
-import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
 
 import com.intel.imllib.fm.regression._
@@ -47,7 +46,8 @@ object FMExample extends App {
     }).repartition(args(1).toInt)
 
     val length = rawData.map(_._2.last._1).max + 1
-println("data size:" + rawData.count +",feature size:" + length + ",k:" + args(4).toInt + ",stepSize:" + args(3))
+    println("data size:" + rawData.count +",feature size:" + length + ",k:" + args(4).toInt
+      + ",stepSize:" + args(3))
     val data: RDD[LabeledPoint] = rawData.map{case(label, v) => LabeledPoint(label, Vectors.sparse(length, v.map(_._1), v.map(_._2)))}
     
     val splits = data.randomSplit(Array(0.8, 0.2))
