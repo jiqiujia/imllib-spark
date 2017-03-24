@@ -18,12 +18,11 @@
 package com.intel.imllib.fm.optimization
 
 import scala.collection.mutable.ArrayBuffer
-import breeze.linalg.{norm, DenseVector => BDV}
+import breeze.linalg.{SparseVector=>BSV, Vector=>BV, DenseVector => BDV}
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
 import org.apache.spark.mllib.optimization._
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
 import org.apache.spark.rdd.RDD
-
 import com.intel.imllib.fm.regression.FMGradient
 
 
@@ -157,6 +156,25 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
  */
 @DeveloperApi
 object GradientDescentFM {
+  def toBreeze(mllibVec: Vector): BV[Double] = new BDV[Double](mllibVec.toDense.values)
+  def fromBreeze(breezeVector: BV[Double]): Vector = {
+    breezeVector match {
+      case v: BDV[Double] =>
+        if (v.offset == 0 && v.stride == 1 && v.length == v.data.length) {
+          new DenseVector(v.data)
+        } else {
+          new DenseVector(v.toArray) // Can't use underlying array directly, so make a new one
+        }
+      case v: BSV[Double] =>
+        if (v.index.length == v.used) {
+          new SparseVector(v.length, v.index, v.data)
+        } else {
+          new SparseVector(v.length, v.index.slice(0, v.used), v.data.slice(0, v.used))
+        }
+      case v: BV[_] =>
+        sys.error("Unsupported Breeze vector type: " + v.getClass.getName)
+    }
+  }
   /**
    * Run stochastic gradient descent (SGD) in parallel using mini batches.
    * In each iteration, we sample a subset (fraction miniBatchFraction) of the total data
@@ -236,11 +254,11 @@ object GradientDescentFM {
       // compute and sum up the subgradients on this subset (this is one map-reduce)
       val wSum = data.treeAggregate(BDV(bcWeights.value.toArray))(
         seqOp = (c, v) => {
-          gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, Vectors.dense(c.toArray), stepSize, i, regParam)
+          gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, fromBreeze(c), stepSize, i, regParam)
         },
         combOp = (c1, c2) => {
           c1 + c2
-        }, 8)
+        }, 7)
 
       weights = Vectors.dense(wSum.toArray.map(_ / slices))
 
