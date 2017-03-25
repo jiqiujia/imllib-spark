@@ -43,8 +43,6 @@ class AdamUpdater extends AdaUpdater {
                iter: Int,
                regParam: Double): (Vector, Vector, Vector, Double, Double, Double) = {
     val decayRate = 1/sqrt(iter)
-//    val m = beta1 * mPre.asBreeze + (1-beta1) * gradient.asBreeze
-//    val v = beta2 * vPre.asBreeze + (1-beta2) * (gradient.asBreeze :* gradient.asBreeze)
     val m = beta1 * toBreeze(mPre) + (1-beta1) * toBreeze(gradient)
     val v = beta2 * toBreeze(vPre) + (1-beta2) * (toBreeze(gradient) :* toBreeze(gradient))
     val beta1power = beta1PowerOld * beta1
@@ -54,11 +52,6 @@ class AdamUpdater extends AdaUpdater {
     val sqv = vc.map(k => sqrt(k))
     val myWeight = toBreeze(weightsOld) - decayRate * (mc :/ (sqv + epsilon))
     (fromBreeze(myWeight), fromBreeze(m), fromBreeze(v), beta1power, beta2power, 0)
-    /*
-    val myWeight = weightsOld.asBreeze - decayRate * (mc :/ (sqv + epsilon))
-    (Vectors.fromBreeze(myWeight), Vectors.fromBreeze(m), Vectors.fromBreeze(v),
-      beta1power, beta2power, 0)
-      */
   }
 }
 
@@ -79,12 +72,6 @@ class AdagradUpdater extends AdaUpdater {
                learningRate: Double,
                iter: Int,
                regParam: Double): (Vector, Vector, Double) = {
-    /*
-    val accum = accumOld.asBreeze + (gradient.asBreeze :* gradient.asBreeze)
-    val sqrtHistGrad = accum.map(k => sqrt(k + epsilon))
-    val Weights = weightsOld.asBreeze - learningRate * (gradient.asBreeze :/ sqrtHistGrad)
-    (Vectors.fromBreeze(Weights), Vectors.fromBreeze(accum), 0)
-    */
     val accum = toBreeze(accumOld) + (toBreeze(gradient) :* toBreeze(gradient))
     val sqrtHistGrad = accum.map(k => sqrt(k + epsilon))
     val Weights = toBreeze(weightsOld) - learningRate * (toBreeze(gradient) :/ sqrtHistGrad)
