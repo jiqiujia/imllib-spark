@@ -18,13 +18,13 @@
 package com.intel.imllib.fm.optimization
 
 import scala.collection.mutable.ArrayBuffer
-import breeze.linalg.{SparseVector=>BSV, Vector=>BV, DenseVector => BDV}
+import breeze.linalg.{DenseVector => BDV}
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
 import org.apache.spark.mllib.optimization._
-import org.apache.spark.mllib.linalg.{DenseVector, SparseVector, Vector, Vectors}
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import com.intel.imllib.fm.regression.FMGradient
-
+import com.intel.imllib.util.vectorUtils._
 
 /**
   * Class used to solve an optimization problem using Gradient Descent.
@@ -156,25 +156,7 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
  */
 @DeveloperApi
 object GradientDescentFM {
-  def toBreeze(mllibVec: Vector): BV[Double] = new BDV[Double](mllibVec.toDense.values)
-  def fromBreeze(breezeVector: BV[Double]): Vector = {
-    breezeVector match {
-      case v: BDV[Double] =>
-        if (v.offset == 0 && v.stride == 1 && v.length == v.data.length) {
-          new DenseVector(v.data)
-        } else {
-          new DenseVector(v.toArray) // Can't use underlying array directly, so make a new one
-        }
-      case v: BSV[Double] =>
-        if (v.index.length == v.used) {
-          new SparseVector(v.length, v.index, v.data)
-        } else {
-          new SparseVector(v.length, v.index.slice(0, v.used), v.data.slice(0, v.used))
-        }
-      case v: BV[_] =>
-        sys.error("Unsupported Breeze vector type: " + v.getClass.getName)
-    }
-  }
+
   /**
    * Run stochastic gradient descent (SGD) in parallel using mini batches.
    * In each iteration, we sample a subset (fraction miniBatchFraction) of the total data

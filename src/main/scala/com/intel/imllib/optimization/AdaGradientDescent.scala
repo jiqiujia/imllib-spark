@@ -26,6 +26,8 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 
+import com.intel.imllib.util.vectorUtils._
+
 /**
  * Class used to solve an optimization problem using Gradient Descent.
   *
@@ -239,8 +241,7 @@ object AdaGradientDescent {
         .treeAggregate((BDV.zeros[Double](n), 0.0, 0L))(
           seqOp = (c, v) => {
             // c: (grad, loss, count), v: (label, features)
-//            val l = gradient.compute(v._2, v._1, bcWeights.value, Vectors.fromBreeze(c._1))
-            val l = gradient.compute(v._2, v._1, bcWeights.value, updater.fromBreeze(c._1))
+            val l = gradient.compute(v._2, v._1, bcWeights.value, fromBreeze(c._1))
             (c._1, c._2 + l, c._3 + 1)
           },
           combOp = (c1, c2) => {
@@ -258,7 +259,7 @@ object AdaGradientDescent {
         updater match {
           case _: AdamUpdater =>
             val update = updater.asInstanceOf[AdamUpdater].compute(
-              weights, updater.fromBreeze(gradientSum / miniBatchSize.toDouble),
+              weights, fromBreeze(gradientSum / miniBatchSize.toDouble),
               m, v, beta1Pow, beta2Pow, i, regParam)
             weights = update._1
             m = update._2
@@ -268,7 +269,7 @@ object AdaGradientDescent {
             regVal = update._6
           case _: AdagradUpdater =>
             val update = updater.asInstanceOf[AdagradUpdater].compute(
-              weights, updater.fromBreeze(gradientSum / miniBatchSize.toDouble),
+              weights, fromBreeze(gradientSum / miniBatchSize.toDouble),
               accum, learningRate, i, regParam)
             weights = update._1
             accum = update._2
