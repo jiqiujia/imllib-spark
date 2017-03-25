@@ -6,8 +6,9 @@ A package contains three Spark-based implementations. It includes
  * Factorization Machines (LibFM)
  * Field-Awared Factorization Machine (FFM)
  * Conditional Random Fields (CRF)
+ * Adaptive learning rate optimizer (AdaGrad, Adam)
 
-This package can be imported as a dependency in other codes. Then, all functions of LibFM, FFM and CRF in this package can be used.
+This package can be imported as a dependency in other codes. Then, all functions of LibFM, FFM, CRF and AdaOptimizer in this package can be used.
 
 # Build from Source
 ```scala
@@ -56,7 +57,7 @@ import com.intel.imllib._
 ```
 
 # Test Examples
-There are three shell scripts in `bin/` for testing LibFM, FFM, and CRF respectively. The script runs in a local mode Spark with the data on hadoop.
+There are three shell scripts in `bin/` for testing LibFM, FFM, CRF and LR with AdaOptimizer respectively. The script runs in a local mode Spark with the data on hadoop.
 You can first modify the script with necessary changes, such as hostname, port for hadoop, etc. Then run the script to test if the algorithm works.
 
 ---
@@ -86,6 +87,10 @@ A Spark-based implementation of Conditional Random Fields (CRF) for segmenting/l
 * Support n-best outputs
 * Linear-chain (first-order Markov) CRF
 * Test can run both in parallel and in serial
+
+## AdaOptimizer
+
+A Spark-based implementation of Adam and AdaGrad optimizer, methods for Stochastic Optimization. See https://arxiv.org/abs/1412.6980 and http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf Comparing with SGD, Adam and AdaGrad have better performance. Especially in case of sparse features, Adam can converge faster than normal SGD.
 
 ## Contact & Feedback
 
