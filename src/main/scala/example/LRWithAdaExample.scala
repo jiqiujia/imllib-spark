@@ -12,7 +12,7 @@ object LRWithAdaExample extends App {
   override def main(args: Array[String]): Unit = {
 
     val sc = new SparkContext(new SparkConf().setAppName("TESTADAOPTIMIZER"))
-    val training = MLUtils.loadLibSVMFile(sc, args(0)).repartition(4)
+    val training = MLUtils.loadLibSVMFile(sc, args(0)).repartition(args(2).toInt)
     val testing = MLUtils.loadLibSVMFile(sc, args(1))
     val lr = new LogisticRegressionWithAda().setIntercept(false)
     Array(new AdagradUpdater, new AdamUpdater).foreach{ updater =>
