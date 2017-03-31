@@ -57,7 +57,7 @@ import com.intel.imllib._
 ```
 
 # Test Examples
-There are three shell scripts in `bin/` for testing LibFM, FFM, CRF and LR with AdaOptimizer respectively. The script runs in a local mode Spark with the data on hadoop.
+There are three shell scripts in `bin/template` for testing LibFM, FFM, CRF and LR with AdaOptimizer respectively. The script runs in a local mode Spark with the data on hadoop.
 You can first modify the script with necessary changes, such as hostname, port for hadoop, etc. Then run the script to test if the algorithm works.
 
 ---

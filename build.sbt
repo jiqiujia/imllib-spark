@@ -15,3 +15,5 @@ libraryDependencies ++= Seq(
 resolvers += Resolver.sonatypeRepo("public")
 
 scalacOptions in Test ++= Seq("-Yrangepos")
+
+parallelExecution := false

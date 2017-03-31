@@ -18,7 +18,7 @@ object LRWithAdaExample extends App {
     Array(new AdagradUpdater, new AdamUpdater).foreach{ updater =>
       lr.optimizer
         .setRegParam(0.0)
-        .setNumIterations(10)
+        .setNumIterations(100)
         .setConvergenceTol(0.0005)
         .setUpdater(updater)
         .setStepSize(0.1)

@@ -36,43 +36,64 @@ import scala.util.control.Breaks._
 
 object FMSuite extends Specification {
   def is = s2"""
-    FMSuite  $e1
+    FMSuite with different dim  $e1
   """
+
+  val numExamples = 200000
+  val numFeatures = 20
+  val numPartitions = 2
+  val labelType = 2
+  val fracCategoricalFeatures = 0
+  val fracBinaryFeatures = 1
+  val treeDepth = 1
+  val iter = 20
+  val step_size = 0.01
+  val k = 4
+
+  val target_accuracy = 0.8
 
   def e1 = {
     val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("FMSuite"))
-
-    val numExamples = 200000
-    val numFeatures = 20
-    val numPartitions = 2
-    val labelType = 2
-    val fracCategoricalFeatures = 0
-    val fracBinaryFeatures = 1
-    val treeDepth = 1
-    val iter = 20
-    val step_size = 0.01
-    val k = 4
-
-    val target_accuracy = 0.9
 
     val data = generateDecisionTreeLabeledPoints(sc, math.ceil(numExamples * 1.25).toLong,
         numFeatures, numPartitions, labelType,
         fracCategoricalFeatures, fracBinaryFeatures, treeDepth)
     val splits = data.randomSplit(Array(0.8,0.2))
     val (training, testing) = (splits(0), splits(1))
- 
-    val fm1: FMModel = FMWithSGD.train(training, task = 1, numIterations
-      = iter, stepSize = step_size, dim = (false, true, k), regParam = (0, 0.0, 0.01), initStd = 0.01)
-    val scores: RDD[(Int, Int)] = fm1.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))
-    val accuracy = scores.filter(x => x._1 == x._2).count().toDouble / scores.count()
 
-    println(s"accuracy = $accuracy")
+    val fm1: FMModel = FMWithSGD.train(training, task = 1, numIterations
+      = iter, stepSize = step_size, dim = (false, false, k), regParam = (0, 0.0, 0.01), initStd = 0.01)
+    var scores1: RDD[(Int, Int)] = fm1.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))
+    var accuracy1 = scores1.filter(x => x._1 == x._2).count().toDouble / scores1.count()
+
+    println(s"accuracy1 = $accuracy1")
+
+    val fm2: FMModel = FMWithSGD.train(training, task = 1, numIterations
+      = iter, stepSize = step_size, dim = (false, true, k), regParam = (0, 0.0, 0.01), initStd = 0.01)
+    val scores2 = fm2.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))
+    val accuracy2 = scores2.filter(x => x._1 == x._2).count().toDouble / scores2.count()
+
+    println(s"accuracy2 = $accuracy2")
+
+    val fm3: FMModel = FMWithSGD.train(training, task = 1, numIterations
+      = iter, stepSize = step_size, dim = (true, false, k), regParam = (0, 0.0, 0.01), initStd = 0.01)
+    val scores3 = fm3.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))     
+    val accuracy3 = scores3.filter(x => x._1 == x._2).count().toDouble / scores3.count()
+    
+    println(s"accuracy3 = $accuracy3")
+
+    val fm4: FMModel = FMWithSGD.train(training, task = 1, numIterations
+      = iter, stepSize = step_size, dim = (true, true, k), regParam = (0, 0.0, 0.01), initStd = 0.01) 
+    val scores4 = fm4.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))     
+    val accuracy4 = scores4.filter(x => x._1 == x._2).count().toDouble / scores4.count()
+    
+    println(s"accuracy4 = $accuracy4")
 
     sc.stop()
 
-    accuracy must be_>(target_accuracy)
+    (accuracy1 must be_>(target_accuracy)) and (accuracy2 must be_>(target_accuracy)) and (accuracy3 must be_>(target_accuracy)) and (accuracy4 must be_>(target_accuracy))
   }
-
+ 
   /**
    * @param labelType  0 = regression with labels in [0,1].  Values >= 2 indicate classification.
    * @param fracCategorical  Fraction of columns/features to be categorical.
