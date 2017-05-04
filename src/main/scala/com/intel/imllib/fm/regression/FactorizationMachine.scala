@@ -100,7 +100,7 @@ object FMModel extends Loader[FMModel] {
 
     def thisFormatVersion = "1.0"
 
-    def thisClassName = "org.apache.spark.mllib.regression.FMModel"
+    def thisClassName = "com.intel.imllib.fm.regression.FMModel$SaveLoadV1_0$"
 
     /** Model data for model import/export */
     case class Data(factorMatrix: Matrix, weightVector: Option[Vector], intercept: Double,
@@ -132,7 +132,7 @@ object FMModel extends Loader[FMModel] {
       val data = dataArray(0)
       val task = data.getInt(0)
       val factorMatrix = data.getAs[Matrix](1)
-      val weightVector = data.getAs[Option[Vector]](2)
+      val weightVector = Some(data.getAs[Vector](2))
       val intercept = data.getDouble(3)
       val min = data.getDouble(4)
       val max = data.getDouble(5)

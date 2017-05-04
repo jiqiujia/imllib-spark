@@ -15,23 +15,36 @@
  * limitations under the License.
  */
 
+package com.intel.imllib.ffm
+
+import org.specs2._
+
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 
 import com.intel.imllib.ffm.classification._
 
-object FFMExample extends App {
+object FFMSuite extends Specification {
+  def is = s2"""
+    FFMSuite $e1
+  """
 
-  override def main(args: Array[String]): Unit = {
+  val trainPath = "data/ffm/a9a_ffm"
+  val modelPath = "model/ffm"
+  val k = 2
+  val iter = 3
+  val eta = 0.01
+  val lambda = 0.00002
+  val normal = false
+  val random = false
 
-    val sc = new SparkContext(new SparkConf().setAppName("FFMExample"))
+  val target_accuracy = 0.8
 
-    if (args.length != 8) {
-      println("FFMExample <train_file> <k> <n_iters> <eta> <lambda> <normal> <random> <model_file>")
-    }
+  def e1 = {
+    val sc = new SparkContext(new SparkConf().setMaster("local").setAppName("FFMSuite"))
 
-    val data= sc.textFile(args(0)).map(_.split("\\s")).map(x => {
+    val data= sc.textFile(trainPath).map(_.split("\\s")).map(x => {
       val y = if(x(0).toInt > 0 ) 1.0 else -1.0
       val nodeArray: Array[(Int, Int, Double)] = x.drop(1).map(_.split(":")).map(x => {
         (x(0).toInt, x(1).toInt, x(2).toDouble)
@@ -46,21 +59,31 @@ object FFMExample extends App {
     val m = data.flatMap(x=>x._2).map(_._1).collect.reduceLeft(_ max _) //+ 1
     val n = data.flatMap(x=>x._2).map(_._2).collect.reduceLeft(_ max _) //+ 1
 
-    val ffm: FFMModel = FFMWithAdag.train(training, m, n, dim = (args(5).toBoolean, args(6).toBoolean, args(1).toInt), n_iters = args(2).toInt,
-      eta = args(3).toDouble, lambda = args(4).toDouble, normalization = false, false, "adagrad")
+    val ffm: FFMModel = FFMWithAdag.train(training, m, n, dim = (normal, random, k), n_iters = iter,
+      eta = eta, lambda = lambda, normalization = false, false, "adagrad")
 
-    val scores: RDD[(Double, Double)] = testing.map(x => {
+    val scores1: RDD[(Double, Double)] = testing.map(x => {
       val p = ffm.predict(x._2)
       val ret = if (p >= 0.5) 1.0 else -1.0
       (ret, x._1)
     })
-    val accuracy = scores.filter(x => x._1 == x._2).count().toDouble / scores.count()
-    println(s"accuracy = $accuracy")
+    val accuracy1 = scores1.filter(x => x._1 == x._2).count().toDouble / scores1.count()
+    println(s"accuracy = $accuracy1")
 
-    ffm.save(sc, args(7))
-    val sameffm = FFMModel.load(sc, args(7))
+    ffm.save(sc, modelPath)
+    val sameffm = FFMModel.load(sc, modelPath)
+
+    val scores2: RDD[(Double, Double)] = testing.map(x => {
+      val p = sameffm.predict(x._2)
+      val ret = if (p >= 0.5) 1.0 else -1.0
+      (ret, x._1)
+    })
+    val accuracy2 = scores2.filter(x => x._1 == x._2).count().toDouble / scores2.count()
+    println(s"accuracy = $accuracy2")
 
     sc.stop()
+
+    (accuracy1 must be_>(target_accuracy)) and (accuracy2 must be_>(target_accuracy)) and (ffm.numFeatures must_== sameffm.numFeatures) and (ffm.numFields must_== sameffm.numFields) and (ffm.dim must_== sameffm.dim) and (ffm.n_iters must_== sameffm.n_iters) and (ffm.eta must_== sameffm.eta) and (ffm.lambda must_== sameffm.lambda) and (ffm.isNorm must_== sameffm.isNorm) and (ffm.random must_== sameffm.random) and (ffm.weights must_== sameffm.weights) and (ffm.sgd must_== sameffm.sgd)
   }
 }
 

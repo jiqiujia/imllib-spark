@@ -28,8 +28,8 @@ object FMExample extends App {
 
     val sc = new SparkContext(new SparkConf().setAppName("FMExample"))
 
-    if (args.length != 5) {
-      println("FMExample <train_file> <partitions> <n_iters> <stepSize> <k>")
+    if (args.length != 6) {
+      println("FMExample <train_file> <partitions> <n_iters> <stepSize> <k> <model_file>")
     }
 
     //customer dataset format convertor
@@ -60,6 +60,10 @@ object FMExample extends App {
     val accuracy = scores.filter(x => x._1 == x._2).count().toDouble / scores.count()
 
     println(s"accuracy = $accuracy")
+
+    fm1.save(sc, args(5))
+    val loadmodel = FMModel.load(sc, args(5))
+
     sc.stop()
   }
 }
