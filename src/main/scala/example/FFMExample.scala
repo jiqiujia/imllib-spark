@@ -16,7 +16,6 @@
  */
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 
 import com.intel.imllib.ffm.classification._

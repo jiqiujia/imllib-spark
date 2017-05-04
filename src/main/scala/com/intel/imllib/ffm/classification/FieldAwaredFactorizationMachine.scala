@@ -27,7 +27,6 @@ import org.json4s.jackson.JsonMethods._
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.{DenseVector, Vector}
 import org.apache.spark.mllib.optimization.Gradient
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import com.intel.imllib.util.Loader._
 import com.intel.imllib.util.{Loader, Saveable}
@@ -174,7 +173,8 @@ object FFMModel extends Loader[FFMModel] {
       // Create JSON metadata.
       val metadata = compact(render(
         ("class" -> this.getClass.getName) ~ ("version" -> thisFormatVersion) ~
-          ("numFeatures" -> data.numFeatures) ~ ("numFields" -> data.numFields)
+          ("numFeatures" -> data.numFeatures) ~ ("numFields" -> data.numFields) ~
+          ("dim0" -> data.dim0) ~ ("dim1" -> data.dim1) ~ ("dim2" -> data.dim2)
           ~ ("n_iters" -> data.n_iters) ~ ("eta" -> data.eta) ~ ("lambda" -> data.lambda)
           ~ ("isNorm" -> data.isNorm) ~ ("random" -> data.random) ~ ("sgd" -> data.sgd)))
       sc.parallelize(Seq(metadata), 1).saveAsTextFile(metadataPath(path))
