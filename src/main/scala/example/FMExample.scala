@@ -19,8 +19,8 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.mllib.regression._
 import org.apache.spark.rdd.RDD
-
 import com.intel.imllib.fm.regression._
+import com.intel.imllib.metric.AUC
 
 object FMExample extends App {
 
@@ -56,10 +56,13 @@ object FMExample extends App {
     val fm1: FMModel = FMWithSGD.train(training, task = 1, numIterations
       = args(2).toInt, stepSize = args(3).toDouble, dim = (false, true, args(4).toInt), regParam = (0, 0.0, 0.01), initStd = 0.01)
 
-    val scores: RDD[(Int, Int)] = fm1.predict(testing.map(_.features)).map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))
-    val accuracy = scores.filter(x => x._1 == x._2).count().toDouble / scores.count()
+    val scores = fm1.predict(testing.map(_.features))
+    val pred: RDD[(Int, Int)] = scores.map(x => if(x >= 0.5) 1 else -1).zip(testing.map(_.label.toInt))
+    val accuracy = pred.filter(x => x._1 == x._2).count().toDouble / scores.count()
+    val auc = AUC.of(testing.map(_.label.toInt).collect(), scores.collect())
 
     println(s"accuracy = $accuracy")
+    println(s"auc = $auc")
 
     fm1.save(sc, args(5))
     val loadmodel = FMModel.load(sc, args(5))
