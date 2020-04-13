@@ -17,6 +17,8 @@
 
 package com.intel.imllib.metric;
 
+import java.util.stream.IntStream;
+
 /**
  * The area under the curve (AUC). When using normalized units, the area under
  * the curve is equal to the probability that a classifier will rank a
@@ -67,7 +69,13 @@ public class AUC {
         int[] label = truth.clone();
         double[] prediction = probability.clone();
 
-        QuickSort.sort(prediction, label);
+        int[] sortedIndices = IntStream.range(0, prediction.length)
+                .boxed().sorted((i, j) -> Double.compare(prediction[j], prediction[i]))
+                .mapToInt(ele -> ele).toArray();
+        for(int i=0; i<label.length; i++){
+            label[i] = truth[sortedIndices[i]];
+            prediction[i] = probability[sortedIndices[i]];
+        }
 
         double[] rank = new double[label.length];
         for (int i = 0; i < prediction.length; i++) {
