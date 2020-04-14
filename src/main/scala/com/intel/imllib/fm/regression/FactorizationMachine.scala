@@ -229,22 +229,22 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
         (diff, diff*diff)
       case 1 =>
         val expnyt = Math.exp(-label * pred)
-        (-label * (1.0 - 1.0 / (1.0 + expnyt)), 1+expnyt) // math.log(1+expnyt)
+        (-label * (1.0 - 1.0 / (1.0 + expnyt)), math.log(1+expnyt)) //
     }
 
     val thisIterStepSize = stepSize / math.sqrt(iter)
     val len = weights.size
-    val weightsArray: Array[Double] = weights.asInstanceOf[DenseVector].values
+    val gradientsArray: Array[Double] = gradient.asInstanceOf[DenseVector].values
 
     if (k0) {
-      weightsArray(len - 1) = weights(len - 1) - thisIterStepSize * (mult + r0 * weights(len - 1))
+      gradientsArray(len - 1) += mult //+ r0 * weights(len - 1)
     }
 
     if (k1) {
       val pos = numFeatures * k2
       data.foreachActive {
         case (i, v) =>
-          weightsArray(pos + i) -= thisIterStepSize * (v * mult + r1 * weightsArray(pos + i))
+          gradientsArray(pos + i) += v * mult //+ r1 * weights(pos + i)
       }
     }
 
@@ -252,11 +252,11 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
       case (i, v) =>
         val pos = i * k2
         for (f <- 0 until k2) {
-          weightsArray(pos + f) -= thisIterStepSize * ((sum(f) * v - weights(pos + f) * v * v) * mult + r2 * weightsArray(pos + f))
+          gradientsArray(pos + f) += (sum(f) * v - weights(pos + f) * v * v) * mult //+ r2 * weights(pos + f)
         }
     }
 
-    (BDV(weightsArray), tr_loss)
+    (BDV(gradientsArray), tr_loss)
   }
 }
 

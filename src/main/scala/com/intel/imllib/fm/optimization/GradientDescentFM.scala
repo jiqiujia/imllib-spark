@@ -17,6 +17,7 @@
 
 package com.intel.imllib.fm.optimization
 
+import breeze.linalg._
 import scala.collection.mutable.ArrayBuffer
 import breeze.linalg.{norm, DenseVector => BDV}
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
@@ -235,22 +236,27 @@ object GradientDescentFM {
       val bcWeights = data.context.broadcast(weights)
       // Sample a subset (fraction miniBatchFraction) of the total data
       // compute and sum up the subgradients on this subset (this is one map-reduce)
-      val (wSum, lSum, miniBatchSize) = data.sample(false, miniBatchFraction, 42+i)
-        .treeAggregate(BDV(bcWeights.value.toArray), 0.0, 0L)(
+      val (gradientSum, lSum, miniBatchSize) = data.sample(false, miniBatchFraction, 42+i)
+        .treeAggregate(BDV.zeros[Double](n), 0.0, 0L)(
           seqOp = (c, v) => {
-            val (w, loss) = gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, bcWeights.value,
+            val (g, loss) = gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, bcWeights.value,
               fromBreeze(c._1), stepSize, i, regParam)
-            (w, c._2 + loss, c._3 + 1L)
+            (g, c._2 + loss, c._3 + 1L)
           },
           combOp = (c1, c2) => {
             (c1._1 + c2._1, c1._2 + c2._2, c1._3 + c2._3)
           }, 2)
 
-      weights = Vectors.dense(wSum.toArray.map(_ / miniBatchSize))
+      val thisIterStepSize = stepSize /// math.sqrt(i)
+      val brzWeights: BDV[Double] = BDV(weights.toArray)
+      brzWeights :*= (1.0 - thisIterStepSize * regParam)
+      axpy(-thisIterStepSize, gradientSum/miniBatchSize.toDouble, brzWeights)
+
+      weights = Vectors.dense(brzWeights.toArray)
       // TODO: 加上正则loss
       val iLoss = lSum / miniBatchSize
       stochasticLossHistory += iLoss
-      val wnorm = norm(wSum)
+      val wnorm = norm(brzWeights)
       println(s"iteration $i miniBatchSize $miniBatchSize lsum $lSum loss $iLoss wnorm $wnorm")
 
       i += 1
