@@ -341,7 +341,7 @@ class FFMGradient(m: Int, n: Int, dim: (Boolean, Boolean, Int), sgd: Boolean = t
             val wg1_index: Int = w1_index + k
             val wg2_index: Int = w2_index + k
             val kappav: Double = kappa * v
-            for (d <- 0 to k - 1) {
+            for (d <- 0 until k) {
               val g1: Double = lambda * weightsArray(w1_index + d) + kappav * weightsArray(w2_index + d)
               val g2: Double = lambda * weightsArray(w2_index + d) + kappav * weightsArray(w1_index + d)
               if (sgd) {

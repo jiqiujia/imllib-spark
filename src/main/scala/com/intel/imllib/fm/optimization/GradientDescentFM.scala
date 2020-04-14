@@ -18,7 +18,7 @@
 package com.intel.imllib.fm.optimization
 
 import scala.collection.mutable.ArrayBuffer
-import breeze.linalg.{DenseVector => BDV}
+import breeze.linalg.{norm, DenseVector => BDV}
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
 import org.apache.spark.mllib.optimization._
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
@@ -135,7 +135,7 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
     */
   @DeveloperApi
   def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
-    val (weights, _) = GradientDescentFM.parallelSGD(
+    val (weights, lossHistory) = GradientDescentFM.parallelSGD(
       data,
       gradient,
       updater,
@@ -145,6 +145,7 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
       miniBatchFraction,
       initialWeights,
       convergenceTol)
+
     weights
   }
 
@@ -234,15 +235,23 @@ object GradientDescentFM {
       val bcWeights = data.context.broadcast(weights)
       // Sample a subset (fraction miniBatchFraction) of the total data
       // compute and sum up the subgradients on this subset (this is one map-reduce)
-      val wSum = data.treeAggregate(BDV(bcWeights.value.toArray))(
-        seqOp = (c, v) => {
-          gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, fromBreeze(c), stepSize, i, regParam)
-        },
-        combOp = (c1, c2) => {
-          c1 + c2
-        }, 7)
+      val (wSum, lSum, miniBatchSize) = data.sample(false, miniBatchFraction, 42+i)
+        .treeAggregate(BDV(bcWeights.value.toArray), 0.0, 0L)(
+          seqOp = (c, v) => {
+            val (w, loss) = gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, bcWeights.value,
+              fromBreeze(c._1), stepSize, i, regParam)
+            (w, c._2 + loss, c._3 + 1L)
+          },
+          combOp = (c1, c2) => {
+            (c1._1 + c2._1, c1._2 + c2._2, c1._3 + c2._3)
+          }, 2)
 
-      weights = Vectors.dense(wSum.toArray.map(_ / slices))
+      weights = Vectors.dense(wSum.toArray.map(_ / miniBatchSize))
+      // TODO: 加上正则loss
+      val iLoss = lSum / miniBatchSize
+      stochasticLossHistory += iLoss
+      val wnorm = norm(wSum)
+      println(s"iteration $i miniBatchSize $miniBatchSize lsum $lSum loss $iLoss wnorm $wnorm")
 
       i += 1
     }

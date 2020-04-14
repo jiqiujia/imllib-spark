@@ -53,8 +53,9 @@ object FMWithSGD {
             stepSize: Double,
             dim: (Boolean, Boolean, Int),
             regParam: (Double, Double, Double),
-            initStd: Double): FMModel = {
-    new FMWithSGD(task, stepSize, numIterations, dim, regParam)
+            initStd: Double,
+            miniBatchFraction: Double=1.0): FMModel = {
+    new FMWithSGD(task, stepSize, numIterations, dim, regParam, miniBatchFraction)
       .setInitStd(initStd)
       .run(input)
   }
@@ -73,7 +74,8 @@ class FMWithSGD(private var task: Int,
                 private var stepSize: Double,
                 private var numIterations: Int,
                 private var dim: (Boolean, Boolean, Int),
-                private var regParam: (Double, Double, Double)) extends Serializable {
+                private var regParam: (Double, Double, Double),
+                private var miniBatchFraction: Double=1.0) extends Serializable {
 
 
   /**
@@ -246,6 +248,7 @@ class FMWithSGD(private var task: Int,
       .setStepSize(stepSize)
       .setNumIterations(numIterations)
       .setConvergenceTol(Double.MinPositiveValue)
+      .setMiniBatchFraction(miniBatchFraction)
 
     val data = task match {
       case 0 =>

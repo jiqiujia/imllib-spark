@@ -70,7 +70,7 @@ public class AUC {
         double[] prediction = probability.clone();
 
         int[] sortedIndices = IntStream.range(0, prediction.length)
-                .boxed().sorted((i, j) -> Double.compare(prediction[j], prediction[i]))
+                .boxed().sorted((i, j) -> Double.compare(prediction[i], prediction[j]))
                 .mapToInt(ele -> ele).toArray();
         for(int i=0; i<label.length; i++){
             label[i] = truth[sortedIndices[i]];
