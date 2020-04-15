@@ -35,17 +35,17 @@ object FMWithSGD {
     * `miniBatchFraction` fraction of the data to calculate a stochastic gradient. The weights used
     * in gradient descent are initialized using the initial weights provided.
     *
-    * @param input RDD of (label, array of features) pairs. Each pair describes a row of the data
-    *              matrix A as well as the corresponding right hand side label y.
-    * @param task 0 for Regression, and 1 for Binary Classification
+    * @param input         RDD of (label, array of features) pairs. Each pair describes a row of the data
+    *                      matrix A as well as the corresponding right hand side label y.
+    * @param task          0 for Regression, and 1 for Binary Classification
     * @param numIterations Number of iterations of gradient descent to run.
-    * @param stepSize Step size to be used for each iteration of gradient descent.
-    * @param dim A (Boolean,Boolean,Int) 3-Tuple stands for whether the global bias term should be used, whether the
-    *            one-way interactions should be used, and the number of factors that are used for pairwise
-    *            interactions, respectively.
-    * @param regParam A (Double,Double,Double) 3-Tuple stands for the regularization parameters of intercept, one-way
-    *                 interactions and pairwise interactions, respectively.
-    * @param initStd Standard Deviation used for factorization matrix initialization.
+    * @param stepSize      Step size to be used for each iteration of gradient descent.
+    * @param dim           A (Boolean,Boolean,Int) 3-Tuple stands for whether the global bias term should be used, whether the
+    *                      one-way interactions should be used, and the number of factors that are used for pairwise
+    *                      interactions, respectively.
+    * @param regParam      A (Double,Double,Double) 3-Tuple stands for the regularization parameters of intercept, one-way
+    *                      interactions and pairwise interactions, respectively.
+    * @param initStd       Standard Deviation used for factorization matrix initialization.
     */
   def train(input: RDD[LabeledPoint],
             task: Int,
@@ -54,10 +54,12 @@ object FMWithSGD {
             dim: (Boolean, Boolean, Int),
             regParam: (Double, Double, Double),
             initStd: Double,
-            miniBatchFraction: Double=1.0): FMModel = {
-    new FMWithSGD(task, stepSize, numIterations, dim, regParam, miniBatchFraction)
+            miniBatchFraction: Double = 1.0): FMModel = {
+    val fmModel = new FMWithSGD(task, stepSize, numIterations, dim, regParam, miniBatchFraction)
       .setInitStd(initStd)
-      .run(input)
+    println(fmModel)
+
+    fmModel.run(input)
   }
 
   def train(input: RDD[LabeledPoint],
@@ -75,7 +77,7 @@ class FMWithSGD(private var task: Int,
                 private var numIterations: Int,
                 private var dim: (Boolean, Boolean, Int),
                 private var regParam: (Double, Double, Double),
-                private var miniBatchFraction: Double=1.0) extends Serializable {
+                private var miniBatchFraction: Double = 1.0) extends Serializable {
 
 
   /**
@@ -115,8 +117,8 @@ class FMWithSGD(private var task: Int,
   /**
     *
     * @param addIntercept determines if the global bias term w0 should be used
-    * @param add1Way determines if one-way interactions (bias terms for each variable)
-    * @param numFactors the number of factors that are used for pairwise interactions
+    * @param add1Way      determines if one-way interactions (bias terms for each variable)
+    * @param numFactors   the number of factors that are used for pairwise interactions
     */
   def setDim(addIntercept: Boolean = true, add1Way: Boolean = true, numFactors: Int = 8): this.type = {
     setDim((addIntercept, add1Way, numFactors))
@@ -137,8 +139,8 @@ class FMWithSGD(private var task: Int,
 
   /**
     * @param regIntercept intercept regularization
-    * @param reg1Way one-way interactions regularization
-    * @param reg2Way pairwise interactions regularization
+    * @param reg1Way      one-way interactions regularization
+    * @param reg2Way      pairwise interactions regularization
     */
   def setRegParam(regIntercept: Double = 0, reg1Way: Double = 0, reg2Way: Double = 0): this.type = {
     setRegParam((regIntercept, reg1Way, reg2Way))
@@ -249,6 +251,10 @@ class FMWithSGD(private var task: Int,
       .setNumIterations(numIterations)
       .setConvergenceTol(Double.MinPositiveValue)
       .setMiniBatchFraction(miniBatchFraction)
+      .setDims((k0, k1, k2))
+      .setNumFeatures(numFeatures)
+      .setRegParam((r0, r1, r2))
+    println(optimizer)
 
     val data = task match {
       case 0 =>
@@ -263,4 +269,6 @@ class FMWithSGD(private var task: Int,
 
     createModel(weights)
   }
+
+  override def toString = s"FMWithSGD(k0=$k0, k1=$k1, k2=$k2, r0=$r0, r1=$r1, r2=$r2, initMean=$initMean, initStd=$initStd, numFeatures=$numFeatures, minLabel=$minLabel, maxLabel=$maxLabel, task=$task, stepSize=$stepSize, numIterations=$numIterations, dim=$dim, regParam=$regParam, miniBatchFraction=$miniBatchFraction)"
 }

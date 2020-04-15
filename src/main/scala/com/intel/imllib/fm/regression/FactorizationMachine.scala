@@ -219,20 +219,20 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
   }
 
   def computeFM(data: Vector, label: Double, weights: Vector, gradient: Vector,
-                stepSize: Double, iter: Int, regParam: Double): (BDV[Double], Double) = {
+                stepSize: Double, iter: Int): (BDV[Double], Double) = {
     require(data.size == numFeatures)
     val (pred, sum) = predict(data, weights)
 
     val (mult, tr_loss) = task match {
       case 0 =>
         val diff = pred - label
-        (diff, diff*diff)
+        (diff, diff * diff)
       case 1 =>
         val expnyt = Math.exp(-label * pred)
-        (-label * (1.0 - 1.0 / (1.0 + expnyt)), math.log(1+expnyt)) //
+        (-label * (1.0 - 1.0 / (1.0 + expnyt)), math.log(1 + expnyt)) //
     }
 
-    val thisIterStepSize = stepSize / math.sqrt(iter)
+    //val thisIterStepSize = stepSize / math.sqrt(iter)
     val len = weights.size
     val gradientsArray: Array[Double] = gradient.asInstanceOf[DenseVector].values
 
@@ -266,11 +266,11 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
 class FMUpdater() extends Updater {
 
   override def compute(
-               weightsOld: Vector,
-               gradient: Vector,
-               stepSize: Double,
-               iter: Int,
-               regParam: Double): (Vector, Double) = {
+                        weightsOld: Vector,
+                        gradient: Vector,
+                        stepSize: Double,
+                        iter: Int,
+                        regParam: Double): (Vector, Double) = {
     throw new Exception("This part is merged into Gradient()")
   }
 }

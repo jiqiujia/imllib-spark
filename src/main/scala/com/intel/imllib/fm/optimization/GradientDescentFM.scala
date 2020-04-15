@@ -18,6 +18,7 @@
 package com.intel.imllib.fm.optimization
 
 import breeze.linalg._
+import breeze.stats._
 import scala.collection.mutable.ArrayBuffer
 import breeze.linalg.{norm, DenseVector => BDV}
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
@@ -38,9 +39,12 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
 
   private var stepSize: Double = 1.0
   private var numIterations: Int = 100
-  private var regParam: Double = 0.0
+  private var regParam: (Double, Double, Double) = (0.0, 0.0, 0.0)
   private var miniBatchFraction: Double = 1.0
   private var convergenceTol: Double = 0.001
+  private var dims: (Boolean, Boolean, Int) = (true, true, 1)
+  private var numFeatures: Int = 1
+
 
   /**
     * Set the initial step size of SGD for the first step. Default 1.0.
@@ -53,6 +57,12 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
     this
   }
 
+  def setNumFeatures(numFeatures: Int): this.type = {
+    require(numFeatures > 0,
+      s"numFeatures must be positive but got ${numFeatures}")
+    this.numFeatures = numFeatures
+    this
+  }
   /**
     * :: Experimental ::
     * Set fraction of data to be used for each SGD iteration.
@@ -79,10 +89,17 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
   /**
     * Set the regularization parameter. Default 0.0.
     */
-  def setRegParam(regParam: Double): this.type = {
-    require(regParam >= 0,
+  def setRegParam(regParam: (Double, Double, Double)): this.type = {
+    require(regParam._1 >= 0 && regParam._2 >=0 && regParam._3>=0,
       s"Regularization parameter must be nonnegative but got ${regParam}")
     this.regParam = regParam
+    this
+  }
+
+  def setDims(dims: (Boolean, Boolean, Int)): this.type = {
+    require(dims._3>=0,
+      s"dims parameter must be nonnegative but got ${dims}")
+    this.dims = dims
     this
   }
 
@@ -136,7 +153,7 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
     */
   @DeveloperApi
   def optimize(data: RDD[(Double, Vector)], initialWeights: Vector): Vector = {
-    val (weights, lossHistory) = GradientDescentFM.parallelSGD(
+    val (weights, _) = GradientDescentFM.parallelSGD(
       data,
       gradient,
       updater,
@@ -145,11 +162,14 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
       regParam,
       miniBatchFraction,
       initialWeights,
-      convergenceTol)
+      convergenceTol,
+      dims,
+      numFeatures)
 
     weights
   }
 
+  override def toString = s"GradientDescentFM(stepSize=$stepSize, numIterations=$numIterations, regParam=$regParam, miniBatchFraction=$miniBatchFraction, convergenceTol=$convergenceTol, dims=$dims, numFeatures=$numFeatures)"
 }
 
 /**
@@ -190,10 +210,12 @@ object GradientDescentFM {
                    updater: Updater,
                    stepSize: Double,
                    numIterations: Int,
-                   regParam: Double,
+                   regParam: (Double, Double, Double),
                    miniBatchFraction: Double,
                    initialWeights: Vector,
-                   convergenceTol: Double): (Vector, Array[Double]) = {
+                   convergenceTol: Double,
+                   dims: (Boolean, Boolean, Int),
+                   numFeatures: Int): (Vector, Array[Double]) = {
 
     // convergenceTol should be set with non minibatch settings
     if (miniBatchFraction < 1.0 && convergenceTol > 0.0) {
@@ -240,25 +262,52 @@ object GradientDescentFM {
         .treeAggregate(BDV.zeros[Double](n), 0.0, 0L)(
           seqOp = (c, v) => {
             val (g, loss) = gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, bcWeights.value,
-              fromBreeze(c._1), stepSize, i, regParam)
+              fromBreeze(c._1), stepSize, i)
             (g, c._2 + loss, c._3 + 1L)
           },
           combOp = (c1, c2) => {
             (c1._1 + c2._1, c1._2 + c2._2, c1._3 + c2._3)
           }, 2)
 
-      val thisIterStepSize = stepSize /// math.sqrt(i)
+      val thisIterStepSize = stepSize / math.sqrt(i)
       val brzWeights: BDV[Double] = BDV(weights.toArray)
-      brzWeights :*= (1.0 - thisIterStepSize * regParam)
-      axpy(-thisIterStepSize, gradientSum/miniBatchSize.toDouble, brzWeights)
+      //brzWeights :*= (1.0 - thisIterStepSize * regParam)
 
-      weights = Vectors.dense(brzWeights.toArray)
+      val gradientAvg = gradientSum/miniBatchSize.toDouble
+      if (dims._1){
+        brzWeights(n-1) *= 1.0 - thisIterStepSize * regParam._1
+        println("b gradient " + gradientAvg(n-1))
+      }
+      val pos = numFeatures * dims._3
+      if (dims._2){
+        (0 until numFeatures).foreach(i => brzWeights(pos+i) = (1.0 - thisIterStepSize * regParam._2)*brzWeights(pos+i))
+        println("w gradient mean " + mean(gradientAvg.slice(pos, n-1)) +" std " + stddev(gradientSum.slice(pos, n-1)))
+      }
+      (0 until pos).foreach(i => brzWeights(i) = (1.0 - thisIterStepSize * regParam._3)*brzWeights(i))
+      println("v gradient mean " + mean(gradientAvg.slice(0, pos)) +" std " + stddev(gradientSum.slice(0, pos)))
+
+      axpy(-thisIterStepSize, gradientAvg, brzWeights)
+
       // TODO: 加上正则loss
       val iLoss = lSum / miniBatchSize
       stochasticLossHistory += iLoss
-      val wnorm = norm(brzWeights)
-      println(s"iteration $i miniBatchSize $miniBatchSize lsum $lSum loss $iLoss wnorm $wnorm")
+      val (bnorm, bRegVal) = if (dims._1){
+        val bnorm = brzWeights(n-1)
+        (bnorm, 0.5 * regParam._1 * bnorm * bnorm)
+      } else (0.0, 0.0)
 
+      val (wnorm, wRegVal) = if (dims._2) {
+        val wnorm = norm(brzWeights.slice(pos, n-1))
+        (wnorm, 0.5 * regParam._2 * wnorm * wnorm)
+      } else (0.0, 0.0)
+
+      val vnorm = norm(brzWeights.slice(0, pos))
+      val vRegVal = 0.5 * regParam._3 * vnorm * vnorm
+
+      println(s"iteration $i miniBatchSize $miniBatchSize lsum $lSum loss $iLoss " +
+        s"bnorm $bnorm breg $bRegVal wnorm $wnorm wreg $wRegVal vnorm $vnorm vRegVal $vRegVal")
+
+      weights = Vectors.dense(brzWeights.toArray)
       i += 1
     }
 
