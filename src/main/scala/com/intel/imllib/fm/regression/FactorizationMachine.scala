@@ -218,6 +218,7 @@ class FMGradient(val task: Int, val k0: Boolean, val k1: Boolean, val k2: Int,
     throw new Exception("This part is merged into computeFM()")
   }
 
+  // TODO: check 数据更新的问题
   def computeFM(data: Vector, label: Double, weights: Vector, gradient: Vector,
                 stepSize: Double, iter: Int): (BDV[Double], Double) = {
     require(data.size == numFeatures)
