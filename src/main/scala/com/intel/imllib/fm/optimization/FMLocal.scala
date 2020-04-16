@@ -77,14 +77,15 @@ class FMLocal(var factorMatrix: BDM[Double],
 object FMLocal {
   private var numFeatures: Int = -1
 
-  def train(input: Seq[LabeledPoint],
+  def train(trainData: Seq[LabeledPoint],
+            testData: Seq[LabeledPoint],
             numIterations: Int,
             stepSize: Double,
             dim: (Boolean, Boolean, Int),
             regParam: (Double, Double, Double),
             initStd: Double,
             pretrainModel: FMLocal = null): FMLocal = {
-    this.numFeatures = input.head.features.size
+    this.numFeatures = trainData.head.features.size
     require(numFeatures > 0)
 
 
@@ -102,7 +103,7 @@ object FMLocal {
     }
 
     (0 until numIterations).foreach(iter => {
-      input.foreach(labelPoint => {
+      trainData.foreach(labelPoint => {
         val label = labelPoint.label
         val data = labelPoint.features
 
@@ -139,7 +140,7 @@ object FMLocal {
         }
         //        model = createModel(k0, k1, k2, Vectors.dense(weightsArray))
       })
-      val (_, acc, auc) = model.evaluate(input)
+      val (_, acc, auc) = model.evaluate(testData)
       println(s"iter $iter train acc $acc auc $auc")
     })
 
