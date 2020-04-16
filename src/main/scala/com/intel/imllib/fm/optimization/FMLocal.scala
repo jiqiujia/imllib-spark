@@ -39,7 +39,7 @@ class FMLocal(var factorMatrix: BDM[Double],
     }
 
     val sum = Array.fill(numFactors)(0.0)
-    for (f <- 0 until numFactors) {
+    (0 until numFactors).foreach(f => {
       var sumSqr = 0.0
       testData.foreachActive {
         case (i, v) =>
@@ -48,7 +48,7 @@ class FMLocal(var factorMatrix: BDM[Double],
           sumSqr += d * d
       }
       pred += (sum(f) * sum(f) - sumSqr) * 0.5
-    }
+    })
     (pred, sum)
   }
 
@@ -216,6 +216,8 @@ object FMLocal {
       fMLocal.weightVector.get.toArray.foreach(w => bufferedWriter.write(w + "\n"))
     bufferedWriter.write("#pairwise interactions Vj,f\n")
     fMLocal.factorMatrix(::, *).foreach(w => bufferedWriter.write(w.toArray.mkString(" ") + "\n"))
+    bufferedWriter.flush()
+    bufferedWriter.close()
 //    fMLocal.factorMatrix..foreach(w => bufferedWriter.write(w.toArray.mkString(" ") + "\n"))
   }
 }
