@@ -63,6 +63,7 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
     this.numFeatures = numFeatures
     this
   }
+
   /**
     * :: Experimental ::
     * Set fraction of data to be used for each SGD iteration.
@@ -90,14 +91,14 @@ class GradientDescentFM(private var gradient: Gradient, private var updater: Upd
     * Set the regularization parameter. Default 0.0.
     */
   def setRegParam(regParam: (Double, Double, Double)): this.type = {
-    require(regParam._1 >= 0 && regParam._2 >=0 && regParam._3>=0,
+    require(regParam._1 >= 0 && regParam._2 >= 0 && regParam._3 >= 0,
       s"Regularization parameter must be nonnegative but got ${regParam}")
     this.regParam = regParam
     this
   }
 
   def setDims(dims: (Boolean, Boolean, Int)): this.type = {
-    require(dims._3>=0,
+    require(dims._3 >= 0,
       s"dims parameter must be nonnegative but got ${dims}")
     this.dims = dims
     this
@@ -258,7 +259,7 @@ object GradientDescentFM {
       val bcWeights = data.context.broadcast(weights)
       // Sample a subset (fraction miniBatchFraction) of the total data
       // compute and sum up the subgradients on this subset (this is one map-reduce)
-      val (gradientSum, lSum, miniBatchSize) = data.sample(false, miniBatchFraction, 42+i)
+      val (gradientSum, lSum, miniBatchSize) = data.sample(false, miniBatchFraction, 42 + i)
         .treeAggregate(BDV.zeros[Double](n), 0.0, 0L)(
           seqOp = (c, v) => {
             val (g, loss) = gradient.asInstanceOf[FMGradient].computeFM(v._2, v._1, bcWeights.value,
@@ -273,31 +274,31 @@ object GradientDescentFM {
       val brzWeights: BDV[Double] = BDV(weights.toArray)
       //brzWeights :*= (1.0 - thisIterStepSize * regParam)
 
-      val gradientAvg = gradientSum/miniBatchSize.toDouble
-      if (dims._1){
-        brzWeights(n-1) *= 1.0 - thisIterStepSize * regParam._1
-        println("b gradient " + gradientAvg(n-1))
+      val gradientAvg = gradientSum / miniBatchSize.toDouble
+      if (dims._1) {
+        brzWeights(n - 1) *= 1.0 - thisIterStepSize * regParam._1
+        println("b gradient " + gradientAvg(n - 1))
       }
       val pos = numFeatures * dims._3
-      if (dims._2){
-        (0 until numFeatures).foreach(i => brzWeights(pos+i) = (1.0 - thisIterStepSize * regParam._2)*brzWeights(pos+i))
-        println("w gradient mean " + mean(gradientAvg.slice(pos, n-1)) +" std " + stddev(gradientSum.slice(pos, n-1)))
+      if (dims._2) {
+        (0 until numFeatures).foreach(i => brzWeights(pos + i) = (1.0 - thisIterStepSize * regParam._2) * brzWeights(pos + i))
+        println("w gradient mean " + mean(gradientAvg.slice(pos, n - 1)) + " std " + stddev(gradientSum.slice(pos, n - 1)))
       }
-      (0 until pos).foreach(i => brzWeights(i) = (1.0 - thisIterStepSize * regParam._3)*brzWeights(i))
-      println("v gradient mean " + mean(gradientAvg.slice(0, pos)) +" std " + stddev(gradientSum.slice(0, pos)))
+      (0 until pos).foreach(i => brzWeights(i) = (1.0 - thisIterStepSize * regParam._3) * brzWeights(i))
+      println("v gradient mean " + mean(gradientAvg.slice(0, pos)) + " std " + stddev(gradientSum.slice(0, pos)))
 
       axpy(-thisIterStepSize, gradientAvg, brzWeights)
 
       // TODO: 加上正则loss
       val iLoss = lSum / miniBatchSize
       stochasticLossHistory += iLoss
-      val (bnorm, bRegVal) = if (dims._1){
-        val bnorm = brzWeights(n-1)
+      val (bnorm, bRegVal) = if (dims._1) {
+        val bnorm = brzWeights(n - 1)
         (bnorm, 0.5 * regParam._1 * bnorm * bnorm)
       } else (0.0, 0.0)
 
       val (wnorm, wRegVal) = if (dims._2) {
-        val wnorm = norm(brzWeights.slice(pos, n-1))
+        val wnorm = norm(brzWeights.slice(pos, n - 1))
         (wnorm, 0.5 * regParam._2 * wnorm * wnorm)
       } else (0.0, 0.0)
 

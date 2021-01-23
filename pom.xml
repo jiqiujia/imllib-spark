@@ -12,40 +12,49 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <scala.version>2.11.12</scala.version>
+        <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.tdw.version>3.12.0</spark.tdw.version>
-        <spark.tencent.version>2.4.4</spark.tencent.version>
-        <spark.community.version>2.4.4</spark.community.version>
+        <spark.tdw.version>3.11.0</spark.tdw.version>
+        <spark.community.version>2.2.0</spark.community.version>
         <hbase.tdw.version>0.98.6.1-tdw-0.1</hbase.tdw.version>
+        <fastjson.version>1.2.58</fastjson.version>
+        <libtorch.version>1.2.0</libtorch.version>
+        <tencent.spark.version>2.4.4</tencent.spark.version>
+        <spark.toolkit.tdw.version>3.12.2-ts</spark.toolkit.tdw.version>
+        <lombok.version>1.8.2</lombok.version>
         <compile.scope>provided</compile.scope>
-        <lombok.version>1.18.2</lombok.version>
     </properties>
     <distributionManagement>
         <repository>
-            <id>internal.releases</id>
+            <id>thirdparty</id>
             <name>internal repository for releases</name>
-            <url>http://maven.oa.com/nexus/content/repositories/thirdparty/</url>
+            <url>https://mirrors.tencent.com/repository/maven/thirdparty/</url>
         </repository>
         <snapshotRepository>
-            <id>internal.snapshots</id>
+            <id>thirdparty-snapshots</id>
             <name>internal repository for snapshots</name>
-            <url>http://maven.oa.com/nexus/content/repositories/thirdparty-snapshots/</url>
+            <url>https://mirrors.tencent.com/repository/maven/thirdparty-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.specs2/specs2-core -->
         <!--<dependency>-->
-            <!--<groupId>org.specs2</groupId>-->
-            <!--<artifactId>specs2-core_2.11</artifactId>-->
-            <!--<version>3.8.8</version>-->
-            <!--<scope>test</scope>-->
+        <!--<groupId>org.specs2</groupId>-->
+        <!--<artifactId>specs2-core_2.11</artifactId>-->
+        <!--<version>3.8.8</version>-->
+        <!--<scope>test</scope>-->
         <!--</dependency>-->
         <!--<dependency>-->
             <!--<groupId>org.scala-lang</groupId>-->
             <!--<artifactId>scala-library</artifactId>-->
             <!--<version>${scala.version}</version>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.0</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.tencent.tdw</groupId>
@@ -108,9 +117,33 @@
         </dependency>
 
         <dependency>
-            <groupId>com.tencent.tdw</groupId>
-            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
-            <version>${spark.tdw.version}</version>
+            <groupId>com.tencent.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${tencent.spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.struts</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
+            <scope>${compile.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tencent.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <version>${tencent.spark.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jackson-core</artifactId>
@@ -124,9 +157,41 @@
             <scope>${compile.scope}</scope>
         </dependency>
         <dependency>
-            <groupId>com.tencent.tdw</groupId>
+            <groupId>com.tencent.spark</groupId>
+            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+            <version>${tencent.spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
+            <scope>${compile.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tencent.spark</groupId>
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
-            <version>${spark.tdw.version}</version>
+            <version>${tencent.spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
+            <scope>${compile.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tencent.spark</groupId>
+            <artifactId>spark-graphx_${scala.binary.version}</artifactId>
+            <version>${tencent.spark.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jackson-core</artifactId>
@@ -142,7 +207,7 @@
         <dependency>
             <groupId>com.tencent.tdw</groupId>
             <artifactId>spark-toolkit_${scala.binary.version}</artifactId>
-            <version>${spark.tdw.version}</version>
+            <version>${spark.toolkit.tdw.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.struts</groupId>
@@ -166,12 +231,26 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
         <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
+                    <descriptors>
+                        <descriptor>src/main/resources/package.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>true</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
@@ -201,7 +280,7 @@
                 </executions>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
-                    <!--<recompileMode>incremental</recompileMode>-->
+                    <recompileMode>incremental</recompileMode>
                     <useZincServer>true</useZincServer>
                     <args>
                         <arg>-unchecked</arg>
@@ -214,6 +293,18 @@
                         <javacArg>-target</javacArg>
                         <javacArg>${java.version}</javacArg>
                     </javacArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <maxmem>1024m</maxmem>
+                    <fork>true</fork>
                 </configuration>
             </plugin>
             <plugin>
@@ -235,106 +326,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                    <maxmem>1024m</maxmem>
-                    <fork>true</fork>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <executions>
-                    <execution>
-                        <id>uber-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
-                            <!--<minimizeJar>true</minimizeJar>-->
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.scala-lang:scala-library</exclude>
-                                    <exclude>org.slf4j:*</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/services/org.apache.lucene.codecs.Codec</resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/services/org.apache.lucene.codecs.DocValuesFormat</resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/services/org.apache.lucene.codecs.PostingsFormat</resource>
-                                </transformer>
-                            </transformers>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>LICENSE</exclude>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
-                    <!--<finalName>${project.artifactId}</finalName>-->
-                    <!--<archive>-->
-                    <!--<manifest>-->
-                    <!--<addClasspath>false</addClasspath>-->
-                    <!--<mainClass>com.entrerprise.App</mainClass>-->
-                    <!--</manifest>-->
-                    <!--</archive>-->
-                    <descriptors>
-                        <descriptor>/src/main/resources/package.xml</descriptor>
-                    </descriptors>
-                    <appendAssemblyId>true</appendAssemblyId>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -345,5 +336,5 @@
             </properties>
         </profile>
     </profiles>
-    
+
 </project>

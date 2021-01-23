@@ -1,20 +1,13 @@
 package com.intel.imllib.fm.optimization
 
 import java.io._
-import java.util
-import java.util.{ArrayList, List}
-
 import breeze.linalg.{*, DenseMatrix => BDM, DenseVector => BDV, Matrix => BM, Vector => BV}
 import breeze.stats.distributions.Rand
-import com.intel.imllib.fm.optimization.FMLocal.numFeatures
 import com.intel.imllib.metric.AUC
-import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector, Vectors}
+import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
-import scala.util.Random
-import scala.collection.JavaConversions._
 
 // 目前只支持分类
 class FMLocal(var factorMatrix: BDM[Double],
