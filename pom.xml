@@ -39,16 +39,23 @@
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.specs2/specs2-core -->
         <!--<dependency>-->
-        <!--<groupId>org.specs2</groupId>-->
-        <!--<artifactId>specs2-core_2.11</artifactId>-->
-        <!--<version>3.8.8</version>-->
-        <!--<scope>test</scope>-->
+            <!--<groupId>org.specs2</groupId>-->
+            <!--<artifactId>specs2-core_2.11</artifactId>-->
+            <!--<version>3.8.8</version>-->
+            <!--<scope>test</scope>-->
         <!--</dependency>-->
         <!--<dependency>-->
             <!--<groupId>org.scala-lang</groupId>-->
             <!--<artifactId>scala-library</artifactId>-->
             <!--<version>${scala.version}</version>-->
         <!--</dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.scalanlp/breeze -->
+        <!--<dependency>-->
+            <!--<groupId>org.scalanlp</groupId>-->
+            <!--<artifactId>breeze_2.11</artifactId>-->
+            <!--<version>1.0</version>-->
+        <!--</dependency>-->
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -56,59 +63,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.tencent.tdw</groupId>
-            <artifactId>spark-core_${scala.binary.version}</artifactId>
-            <version>${spark.tdw.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-configuration</groupId>
-                    <artifactId>commons-configuration</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.struts</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jackson-core</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.hankcs</groupId>
-                    <artifactId>dphanlp</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jackson-databind</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-            </exclusions>
-            <scope>${compile.scope}</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.tencent.tdw</groupId>
-            <artifactId>spark-sql_${scala.binary.version}</artifactId>
-            <version>${spark.tdw.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jackson-core</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jackson-databind</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-            </exclusions>
-            <scope>${compile.scope}</scope>
-        </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
