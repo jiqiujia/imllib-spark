@@ -386,6 +386,7 @@ class Word2Vec extends Serializable with Logging {
     // each partition is a collection of sentences,
     // will be translated into arrays of Index integer
     val sentences: RDD[Array[Int]] = dataset.mapPartitions { sentenceIter =>
+      logInfo(f"train word count $trainWordsCount")
       // Each sentence will map to 0 or more Array[Int]
       sentenceIter.flatMap { sentence =>
         // Sentence of words, some of which map to a word index
