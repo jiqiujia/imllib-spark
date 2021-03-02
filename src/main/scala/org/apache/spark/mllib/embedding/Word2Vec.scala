@@ -528,6 +528,9 @@ class Word2Vec extends Serializable with Logging {
                         val ind = ((f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2.0)).toInt
                         g = (label - expTable.value(ind)) * alpha
                       }
+                      // neu1e = g * syn1 + neu1e
+                      // blas.saxpy函数解释：saxpy(int n, float sa, float[] sx, int _sx_offset, int incx, float[] sy, int _sy_offset, int incy)
+                      // 结果是：sy= sa*sx+sy，并且sx[_sx_offset,_sx_offset+incx*n],sy[_sy_offset,_sy_offset+incy*n]
                       blas.saxpy(vectorSize, g.toFloat, syn1Neg, l2, 1, neu1e, 0, 1)
                       blas.saxpy(vectorSize, g.toFloat, neu1, 0, 1, syn1Neg, l2, 1)
                       syn1NegModify(target) += 1
