@@ -50,30 +50,32 @@ object TrainWord2Vec {
     println(s"dataPartitionNum=$numDataPartitions")
 
     val data = sc.textFile(input).map(x => x.split(" ").tail.map(_.toInt))
-        .persist()
+      .filter(x => x.length > 1) // 这里直接过滤掉长度为1的
+      .persist()
     data.take(1).foreach(println)
     val wordIdx = data.flatMap(x => x)
       .map(w => (w, 1))
       .reduceByKey(_ + _)
       .filter(_._2 >= minCount)
       .map(_._1)
-      .zipWithIndex()
-      .collectAsMap()
-    val corpus = data.map(words => words.filter(w => wordIdx.contains(w)).map(w => wordIdx(w).toInt))
-        .filter(x => x.length > 1)  // 这里直接过滤掉长度为1的
+      .collect()
+      .zipWithIndex
+      .toMap
+    val corpus = data.map(words => words.filter(w => wordIdx.contains(w)).map(w => wordIdx(w)))
+        .filter(_.nonEmpty)
     data.unpersist(false)
-    DataLoader.writeLines(wordIdx.map(x => x._1 +"\t"+ x._2).toSeq,
-      io.getOuputStream(output +"/mapping").get)
+    DataLoader.writeLines(wordIdx.map(x => x._1 + "\t" + x._2).toSeq,
+      io.getOuputStream(output + ".mapping").get)
 
-//    var corpus: RDD[Array[Int]] = null
-//    var denseToString: Option[RDD[(Int, String)]] = None
-//    if (withRemapping) {
-//      val temp = Features.corpusStringToInt(data)
-//      corpus = temp._1
-//      denseToString = Some(temp._2)
-//    } else {
-//      corpus = Features.corpusStringToIntWithoutRemapping(data)
-//    }
+    //    var corpus: RDD[Array[Int]] = null
+    //    var denseToString: Option[RDD[(Int, String)]] = None
+    //    if (withRemapping) {
+    //      val temp = Features.corpusStringToInt(data)
+    //      corpus = temp._1
+    //      denseToString = Some(temp._2)
+    //    } else {
+    //      corpus = Features.corpusStringToIntWithoutRemapping(data)
+    //    }
     //Subsample will use ps, so start ps before subsample
     PSContext.getOrCreate(sc)
 
@@ -116,7 +118,7 @@ object TrainWord2Vec {
     }
     model.train(docs, param, output)
     model.save(output)
-//    denseToString.foreach(rdd => rdd.map(f => s"${f._1}:${f._2}").saveAsTextFile(output + "/mapping"))
+    //    denseToString.foreach(rdd => rdd.map(f => s"${f._1}:${f._2}").saveAsTextFile(output + "/mapping"))
     stop()
   }
 
