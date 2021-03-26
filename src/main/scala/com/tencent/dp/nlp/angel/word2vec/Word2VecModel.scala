@@ -239,7 +239,6 @@ class Word2VecModel(numNode: Int,
     } catch {
       case e: Exception => {
         e.printStackTrace()
-        LogUtils.logTime("distinct id number in a batch: " + (srcNodes.toSet ++ dstNodes.toSet ++ negativeSamples.toSet).size)
         null
       }
     }
@@ -268,7 +267,8 @@ class Word2VecModel(numNode: Int,
   }
 
   def dot(srcNodes: Array[Int], destNodes: Array[Int], negativeSamples: Array[Array[Int]],
-          srcFeats: Int2ObjectOpenHashMap[Array[Float]], targetFeats: Int2ObjectOpenHashMap[Array[Float]], negative: Int): Array[Float] = {
+          srcFeats: Int2ObjectOpenHashMap[Array[Float]], targetFeats: Int2ObjectOpenHashMap[Array[Float]],
+          negative: Int): Array[Float] = {
     val dots: Array[Float] = new Array[Float]((1 + negative) * srcNodes.length)
     var docIndex = 0
     for (i <- srcNodes.indices) {
@@ -278,7 +278,7 @@ class Word2VecModel(numNode: Int,
       docIndex += 1
 
       // Get dot value for (src, negative sample)
-      for (j <- 0 until negative) {
+      for (j <- negativeSamples(i).indices) {
         dots(docIndex) = arraysDot(srcVec, targetFeats.get(negativeSamples(i)(j)))
         docIndex += 1
       }
@@ -287,9 +287,7 @@ class Word2VecModel(numNode: Int,
   }
 
   def arraysDot(x: Array[Float], y: Array[Float]): Float = {
-    var dotValue = 0.0f
-    x.indices.foreach(i => dotValue += x(i) * y(i))
-    dotValue
+    x.indices.map(i => x(i) * y(i)).sum
   }
 
   def doGrad(dots: Array[Float], negative: Int, alpha: Float): Float = {
@@ -300,7 +298,7 @@ class Word2VecModel(numNode: Int,
         dots(i) = alpha * (1 - prob)
         loss -= FastSigmoid.log(prob)
       } else {
-        dots(i) = -alpha * FastSigmoid.sigmoid(dots(i))
+        dots(i) = -alpha * prob
         loss -= FastSigmoid.log(1 - prob)
       }
     }
@@ -477,13 +475,14 @@ class Word2VecModel(numNode: Int,
         while (dstIndex < Math.min(srcIndex + windowSize + 1, sen.length)) {
           if (srcIndex != dstIndex) {
             srcNodes.append(sen(dstIndex))
-            dstNodes.append(sen(srcIndex))
+            dstNodes.append(sen(dstIndex))
           }
           dstIndex += 1
         }
       }
     }
     val negativeSamples = negativeSample(srcNodes.toArray, dstNodes.toArray, negative, maxIndex, rand.nextInt())
+    println(srcNodes.mkString(","))
     (srcNodes.toArray, dstNodes.toArray, negativeSamples)
   }
 

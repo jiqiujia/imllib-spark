@@ -50,7 +50,7 @@ object TrainWord2Vec {
     println(s"dataPartitionNum=$numDataPartitions")
 
     val data = sc.textFile(input).map(x => x.split(" ").tail.map(_.toInt))
-      .filter(x => x.length > 1) // 这里直接过滤掉长度为1的
+      .filter(x => x.length > 1)
       .persist()
     data.take(1).foreach(println)
     val wordIdx = data.flatMap(x => x)
