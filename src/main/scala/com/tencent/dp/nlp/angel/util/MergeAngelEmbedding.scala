@@ -15,14 +15,24 @@ object MergeAngelEmbedding {
     val io = new IOHandler("")
     val sc = io.getSparkContext()
 
-    val mapping = DataLoader.readLines(mappingPath)
-      .map(x => x.split("\t", -1))
-      .map(x => (x(1), x(0)))
-      .toMap
+    val mapping = if(mappingPath.nonEmpty) {
+      DataLoader.readLines(mappingPath)
+        .map(x => x.split("\t", -1))
+        .map(x => (x(1), x(0)))
+        .toMap
+    } else {
+      null
+    }
 
     val data = sc.textFile(inPath)
       .map(x => x.split(":", -1))
-      .map(x => mapping(x.head) + " " + x(1))
+      .map(x => {
+        if (mapping != null) {
+          mapping(x.head) + " " + x(1)
+        } else {
+          x.head + " " + x(1)
+        }
+      })
       .collect()
       .toSeq
 

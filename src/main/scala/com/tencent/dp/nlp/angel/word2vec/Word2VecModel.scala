@@ -166,11 +166,12 @@ class Word2VecModel(numNode: Int,
                 learningRate, params.sampleRate), batch.length)
             })
       }.reduce((f1, f2) => (f1._1 + f2._1, f1._2 + f2._2))
-      learningRate = learningRate * params.decayRate //ssScheduler.next().toFloat
+      learningRate = ssScheduler.next().toFloat
       val epochTime = System.currentTimeMillis() - epochStartTime
-      println(s"epoch=$epoch loss=${lossSum / size} time=${epochTime.toFloat / 1000}s")
+      println(s"epoch=$epoch learningrate=$learningRate loss=${lossSum / size} time=${epochTime.toFloat / 1000}s")
       checkpointAndSaveIfNeed(epoch, params, path)
     }
+    // learningRate = learningRate * params.decayRate
   }
 
   /**
@@ -347,17 +348,18 @@ class Word2VecModel(numNode: Int,
       merge(inputUpdateCounter, inputUpdates, srcNodes(i), 1, neule)
     }
 
-    var iter = inputUpdateCounter.int2IntEntrySet().fastIterator()
-    while (iter.hasNext) {
-      val entry = iter.next()
-      div(inputUpdates.get(entry.getIntKey), entry.getIntValue.toFloat)
-    }
-
-    iter = outputUpdateCounter.int2IntEntrySet().fastIterator()
-    while (iter.hasNext) {
-      val entry = iter.next()
-      div(outputUpdates.get(entry.getIntKey), entry.getIntValue.toFloat)
-    }
+    // 移除梯度平均，目前评估，梯度平均对效果造成主要的负向影响
+//    var iter = inputUpdateCounter.int2IntEntrySet().fastIterator()
+//    while (iter.hasNext) {
+//      val entry = iter.next()
+//      div(inputUpdates.get(entry.getIntKey), entry.getIntValue.toFloat)
+//    }
+//
+//    iter = outputUpdateCounter.int2IntEntrySet().fastIterator()
+//    while (iter.hasNext) {
+//      val entry = iter.next()
+//      div(outputUpdates.get(entry.getIntKey), entry.getIntValue.toFloat)
+//    }
 
     (inputUpdates, outputUpdates)
   }
@@ -475,14 +477,13 @@ class Word2VecModel(numNode: Int,
         while (dstIndex < Math.min(srcIndex + windowSize + 1, sen.length)) {
           if (srcIndex != dstIndex) {
             srcNodes.append(sen(dstIndex))
-            dstNodes.append(sen(dstIndex))
+            dstNodes.append(sen(srcIndex))
           }
           dstIndex += 1
         }
       }
     }
     val negativeSamples = negativeSample(srcNodes.toArray, dstNodes.toArray, negative, maxIndex, rand.nextInt())
-    println(srcNodes.mkString(","))
     (srcNodes.toArray, dstNodes.toArray, negativeSamples)
   }
 
